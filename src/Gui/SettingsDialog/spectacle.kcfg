@@ -70,9 +70,9 @@
         </choices>
         <default>UntilClosed</default>
     </entry>
-    <entry name="ocrLanguages" type="StringList">
-        <label>Default languages for OCR text recognition</label>
-        <default>eng</default>
+    <entry name="enableOCRTranslate" type="Bool">
+        <label>Enable OCR and translation feature</label>
+        <default>true</default>
     </entry>
 </group>
 <group name="GuiConfig">

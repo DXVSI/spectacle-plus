@@ -11,14 +11,20 @@
 #include "ExportManager.h"
 #include "SpectacleCore.h"
 #include "Geometry.h"
+#include "OCRManager.h"
+#include "TranslateManager.h"
 #include "Gui/ExportMenu.h"
 #include "Gui/HelpMenu.h"
 #include "Gui/OptionsMenu.h"
+#include "Gui/SelectionEditor.h"
+#include "Gui/Selection.h"
+#include "Gui/TranslateDialog.h"
 #include "Gui/WidgetWindowUtils.h"
 
 #include <QApplication>
 #include <QColorDialog>
 #include <QFontDialog>
+#include <QMessageBox>
 #include <QtQml>
 #include <utility>
 
@@ -261,6 +267,92 @@ void SpectacleWindow::copyLocation()
     }
     SpectacleCore::instance()->syncExportImage();
     ExportManager::instance()->exportImage(ExportManager::CopyPath | ExportManager::UserAction);
+}
+
+void SpectacleWindow::translateSelectedArea()
+{
+    // Получаем выделенную область
+    Selection *selection = SelectionEditor::instance()->selection();
+    QRectF selectionRect = selection->normalized();
+
+    // Если нет выделения, используем весь экран
+    if (selectionRect.isEmpty()) {
+        selectionRect = SelectionEditor::instance()->screensRect();
+    }
+
+    // Обрезаем canvas к выделенной области (как делает acceptSelection)
+    SpectacleCore::instance()->annotationDocument()->cropCanvas(selectionRect);
+
+    // Теперь рендерим изображение - оно будет содержать только выделенную область
+    SpectacleCore::instance()->syncExportImage();
+
+    // Получаем обрезанное изображение
+    QImage imageToProcess = ExportManager::instance()->image();
+
+    if (imageToProcess.isNull()) {
+        QMessageBox::information(nullptr,
+                                QStringLiteral("OCR"),
+                                QStringLiteral("No image available"));
+        return;
+    }
+
+    // Сохраняем изображение для повторного распознавания
+    QImage savedImage = imageToProcess.copy();
+
+    // Распознаем текст в выбранной области с языком по умолчанию
+    QString recognizedText = OCRManager::instance()->recognizeText(imageToProcess, QStringLiteral("eng+rus"));
+
+    if (recognizedText.isEmpty()) {
+        QMessageBox::information(nullptr,
+                                QStringLiteral("OCR Result"),
+                                QStringLiteral("No text found in selected area"));
+        return;
+    }
+
+    // Создаем и показываем диалог перевода
+    auto *dialog = new TranslateDialog(recognizedText);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    // Подключаем сигнал для повторного распознавания с другим языком
+    connect(dialog, &TranslateDialog::ocrRequested,
+            this, [dialog, savedImage](const QString &ocrLang) {
+        QString newText = OCRManager::instance()->recognizeText(savedImage, ocrLang);
+        if (newText.isEmpty()) {
+            dialog->setRecognizedText(QStringLiteral("No text found"));
+        } else {
+            dialog->setRecognizedText(newText);
+        }
+    });
+
+    // Подключаем сигнал для запроса перевода
+    connect(dialog, &TranslateDialog::translateRequested,
+            this, [dialog](const QString &sourceLang, const QString &targetLang) {
+        // Отключаем старые подключения к этому диалогу перед новым запросом
+        disconnect(TranslateManager::instance(), nullptr, dialog, nullptr);
+
+        // Подключаем сигналы на один раз для этого запроса
+        connect(TranslateManager::instance(), &TranslateManager::translationReady,
+                dialog, &TranslateDialog::setTranslatedText, Qt::SingleShotConnection);
+
+        connect(TranslateManager::instance(), &TranslateManager::errorOccurred,
+                dialog, [dialog](const QString &error) {
+            dialog->setTranslatedText(QStringLiteral("Error: ") + error);
+        }, Qt::SingleShotConnection);
+
+        // Запускаем перевод
+        TranslateManager::instance()->translateText(
+            dialog->recognizedText(),
+            sourceLang,
+            targetLang
+        );
+    });
+
+    // Очищаем подключения при закрытии диалога
+    connect(dialog, &QDialog::finished, this, [dialog]() {
+        disconnect(TranslateManager::instance(), nullptr, dialog, nullptr);
+    });
+
+    dialog->show();
 }
 
 void SpectacleWindow::showPrintDialog()

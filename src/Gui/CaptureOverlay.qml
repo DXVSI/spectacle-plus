@@ -506,13 +506,6 @@ MouseArea {
                     visible: action.enabled
                     action: CopyImageAction {}
                 }
-                 
-                ToolButton {
-                    display: TtToolButton.IconOnly
-                    visible: !SpectacleCore.videoMode && SpectacleCore.ocrAvailable
-                    action: OcrAction {}
-                }
-                 
                 ExportMenuButton {
                     focusPolicy: Qt.NoFocus
                 }
@@ -539,12 +532,10 @@ MouseArea {
                     visible: action.enabled
                     action: CopyImageAction {}
                 }
-                 
                 ToolButton {
-                    visible: !SpectacleCore.videoMode && SpectacleCore.ocrAvailable
-                    action: OcrAction {}
+                    visible: action.enabled && Settings.enableOCRTranslate
+                    action: TranslateAction {}
                 }
-                 
                 ExportMenuButton {
                     focusPolicy: Qt.NoFocus
                 }

@@ -25,7 +25,8 @@ target_sources(spectacle PRIVATE
     CommandLineOptions.cpp
     ExportManager.cpp
     Geometry.cpp
-    OcrManager.cpp
+    OCRManager.cpp
+    TranslateManager.cpp
     Gui/Annotations/AnnotationDocument.cpp
     Gui/Annotations/AnnotationTool.cpp
     Gui/Annotations/AnnotationViewport.cpp
@@ -44,7 +45,6 @@ target_sources(spectacle PRIVATE
     Gui/SelectionEditor.cpp
     Gui/SettingsDialog/GeneralOptionsPage.cpp
     Gui/SettingsDialog/ImageSaveOptionsPage.cpp
-    Gui/SettingsDialog/OcrLanguageSelector.cpp
     Gui/SettingsDialog/SettingsDialog.cpp
     Gui/SettingsDialog/ShortcutsOptionsPage.cpp
     Gui/SettingsDialog/VideoFormatComboBox.cpp
@@ -53,6 +53,7 @@ target_sources(spectacle PRIVATE
     Gui/SpectacleMenu.cpp
     Gui/SpectacleWindow.cpp
     Gui/TextContextMenu.cpp
+    Gui/TranslateDialog.cpp
     Gui/ViewerWindow.cpp
     Main.cpp
     PlasmaVersion.cpp
@@ -111,6 +112,7 @@ target_include_directories(spectacle PUBLIC ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(spectacle PRIVATE
     Qt::Concurrent
     Qt::DBus
+    Qt::Network
     Qt::PrintSupport
     Qt::Qml
     Qt::Quick
@@ -137,13 +139,9 @@ target_link_libraries(spectacle PRIVATE
     Wayland::Client
     LayerShellQt::Interface
     ${OpenCV_LIBRARIES}
+    tesseract
+    leptonica
 )
-
-# Link against Tesseract when OCR support is enabled
-if(HAVE_TESSERACT_OCR)
-    target_include_directories(spectacle PRIVATE ${TESSERACT_INCLUDE_DIRS})
-    target_link_libraries(spectacle PRIVATE ${TESSERACT_LIBRARIES})
-endif()
 
 # qt_add_qml_module doesn't know how to deal with headers in subdirectories so
 # make sure to add those so the headers can be found.
@@ -162,6 +160,7 @@ qt_target_qml_sources(spectacle
     Gui/AcceptAction.qml
     Gui/AnimatedLoader.qml
     Gui/AnnotationOptionsToolBarContents.qml
+    Gui/TranslateAction.qml
     Gui/Annotations/AnnotationEditor.qml
     Gui/Annotations/CropTool.qml
     Gui/Annotations/HoverOutline.qml
@@ -188,7 +187,6 @@ qt_target_qml_sources(spectacle
     Gui/InlineMessageList.qml
     Gui/Magnifier.qml
     Gui/NewScreenshotToolButton.qml
-    Gui/OcrAction.qml
     Gui/OptionsMenuButton.qml
     Gui/Outline.qml
     Gui/QmlUtils.qml
