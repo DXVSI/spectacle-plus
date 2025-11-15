@@ -25,7 +25,7 @@ target_sources(spectacle PRIVATE
     CommandLineOptions.cpp
     ExportManager.cpp
     Geometry.cpp
-    OCRManager.cpp
+    OcrManager.cpp
     TranslateManager.cpp
     Gui/Annotations/AnnotationDocument.cpp
     Gui/Annotations/AnnotationTool.cpp
@@ -45,6 +45,7 @@ target_sources(spectacle PRIVATE
     Gui/SelectionEditor.cpp
     Gui/SettingsDialog/GeneralOptionsPage.cpp
     Gui/SettingsDialog/ImageSaveOptionsPage.cpp
+    Gui/SettingsDialog/OcrLanguageSelector.cpp
     Gui/SettingsDialog/SettingsDialog.cpp
     Gui/SettingsDialog/ShortcutsOptionsPage.cpp
     Gui/SettingsDialog/VideoFormatComboBox.cpp

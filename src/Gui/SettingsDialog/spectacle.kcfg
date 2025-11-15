@@ -74,6 +74,10 @@
         <label>Enable OCR and translation feature</label>
         <default>true</default>
     </entry>
+    <entry name="ocrLanguages" type="StringList">
+        <label>Selected OCR languages</label>
+        <default>eng</default>
+    </entry>
 </group>
 <group name="GuiConfig">
     <entry name="selectionRect" type="RectF">

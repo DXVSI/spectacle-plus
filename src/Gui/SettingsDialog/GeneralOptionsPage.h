@@ -20,20 +20,6 @@ class GeneralOptionsPage : public QWidget
 public:
     explicit GeneralOptionsPage(QWidget *parent = nullptr);
     ~GeneralOptionsPage() override;
-    
-    void refreshOcrLanguageSettings();
-
-    /**
-     * @brief Get direct access to the OCR language selector widget
-     * @return Pointer to the OcrLanguageSelector widget for direct manipulation
-     */
-    OcrLanguageSelector *ocrLanguageSelector() const
-    {
-        return m_ocrLanguageSelector;
-    }
-
-Q_SIGNALS:
-    void ocrLanguageChanged();
 
 private:
     QScopedPointer<Ui_GeneralOptions> m_ui;

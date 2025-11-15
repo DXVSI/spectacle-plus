@@ -254,10 +254,6 @@ void ExportMenu::createOcrLanguageSubmenu()
         connect(ocrManager, &OcrManager::statusChanged, this, &ExportMenu::buildOcrLanguageSubmenu);
     }
 
-    if (auto settings = Settings::self()) {
-        connect(settings, &Settings::ocrLanguagesChanged, this, &ExportMenu::buildOcrLanguageSubmenu);
-    }
-
     connect(m_ocrLanguageMenu, &QMenu::aboutToShow, this, &ExportMenu::buildOcrLanguageSubmenu);
 
     buildOcrLanguageSubmenu();
